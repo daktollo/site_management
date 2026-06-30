@@ -75,6 +75,9 @@ export default {
     noResults: 'Eşleşen işlem bulunamadı.',
     allTypes: 'Tüm türler',
     allCreators: 'Tüm oluşturanlar',
+    fromDate: 'Başlangıç',
+    toDate: 'Bitiş',
+    clearFilters: 'Filtreleri temizle',
   },
   cleaning: {
     title: 'Temizlik takvimi',

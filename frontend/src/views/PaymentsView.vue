@@ -23,6 +23,24 @@ function closeTx() { selectedTxId.value = null; }
 const filterText = ref('');
 const filterType = ref('');
 const filterCreator = ref('');
+const filterFrom = ref('');
+const filterTo = ref('');
+
+// Local 'YYYY-MM-DD' for a transaction's creation date (matches what's displayed).
+function dateKey(iso) {
+  const d = new Date(iso);
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+function clearFilters() {
+  filterText.value = '';
+  filterType.value = '';
+  filterCreator.value = '';
+  filterFrom.value = '';
+  filterTo.value = '';
+}
 
 const creators = computed(() => {
   const map = new Map();
@@ -35,6 +53,9 @@ const filteredTransactions = computed(() =>
     if (filterType.value && tx.type !== filterType.value) return false;
     if (filterCreator.value !== '' && tx.created_by !== filterCreator.value) return false;
     if (filterText.value && !tx.name.toLowerCase().includes(filterText.value.trim().toLowerCase())) return false;
+    const day = dateKey(tx.created_at);
+    if (filterFrom.value && day < filterFrom.value) return false;
+    if (filterTo.value && day > filterTo.value) return false;
     return true;
   })
 );
@@ -218,6 +239,17 @@ onMounted(load);
             <option value="">{{ t('payments.allCreators') }}</option>
             <option v-for="c in creators" :key="c.id" :value="c.id">{{ c.name }}</option>
           </select>
+        </div>
+        <div>
+          <label style="margin-top:0">{{ t('payments.fromDate') }}</label>
+          <input v-model="filterFrom" type="date" :max="filterTo || undefined" />
+        </div>
+        <div>
+          <label style="margin-top:0">{{ t('payments.toDate') }}</label>
+          <input v-model="filterTo" type="date" :min="filterFrom || undefined" />
+        </div>
+        <div style="display:flex; align-items:flex-end">
+          <button class="ghost small" @click="clearFilters">{{ t('payments.clearFilters') }}</button>
         </div>
       </div>
 

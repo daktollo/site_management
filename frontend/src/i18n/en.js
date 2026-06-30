@@ -75,6 +75,9 @@ export default {
     noResults: 'No matching transactions.',
     allTypes: 'All types',
     allCreators: 'All creators',
+    fromDate: 'From',
+    toDate: 'To',
+    clearFilters: 'Clear filters',
   },
   cleaning: {
     title: 'Cleaning schedules',
