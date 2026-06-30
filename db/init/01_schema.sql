@@ -26,8 +26,8 @@ CREATE TABLE units (
 -- ---------------------------------------------------------------------------
 CREATE TABLE users (
     id            SERIAL PRIMARY KEY,
-    full_name     TEXT NOT NULL,
-    email         TEXT NOT NULL UNIQUE,
+    full_name     TEXT NOT NULL UNIQUE,   -- login identifier (the "name")
+    email         TEXT UNIQUE,            -- optional
     password_hash TEXT NOT NULL,
     role          TEXT NOT NULL DEFAULT 'resident'
                   CHECK (role IN ('admin', 'staff', 'resident')),

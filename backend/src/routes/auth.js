@@ -9,22 +9,22 @@ const router = Router();
 
 function signToken(user) {
   return jwt.sign(
-    { id: user.id, role: user.role, email: user.email },
+    { id: user.id, role: user.role, name: user.full_name },
     config.jwtSecret,
     { expiresIn: config.jwtExpiresIn }
   );
 }
 
-// POST /api/auth/login
+// POST /api/auth/login — log in with the user's name
 router.post('/login', async (req, res, next) => {
   try {
-    const { email, password } = req.body || {};
-    if (!email || !password) {
-      return res.status(400).json({ error: 'email and password are required' });
+    const { name, password } = req.body || {};
+    if (!name || !password) {
+      return res.status(400).json({ error: 'name and password are required' });
     }
     const { rows } = await query(
-      'SELECT id, full_name, email, password_hash, role, unit_id FROM users WHERE email = $1',
-      [email]
+      'SELECT id, full_name, email, password_hash, role, unit_id FROM users WHERE full_name = $1',
+      [name]
     );
     const user = rows[0];
     if (!user || !(await bcrypt.compare(password, user.password_hash))) {

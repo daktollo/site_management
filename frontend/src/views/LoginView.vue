@@ -8,8 +8,8 @@ const auth = useAuthStore();
 const router = useRouter();
 const { t } = useI18n();
 
-const email = ref('alice@site.test');
-const password = ref('password123');
+const name = ref('');
+const password = ref('');
 const error = ref('');
 const loading = ref(false);
 
@@ -17,7 +17,7 @@ async function submit() {
   error.value = '';
   loading.value = true;
   try {
-    await auth.login(email.value, password.value);
+    await auth.login(name.value, password.value);
     router.push({ name: 'dashboard' });
   } catch (e) {
     error.value = e.response?.data?.error || t('login.failed');
@@ -32,8 +32,8 @@ async function submit() {
     <div class="card">
       <h1>{{ t('login.title') }}</h1>
       <form @submit.prevent="submit">
-        <label>{{ t('login.email') }}</label>
-        <input v-model="email" type="email" autocomplete="username" />
+        <label>{{ t('login.name') }}</label>
+        <input v-model="name" type="text" autocomplete="username" />
         <label>{{ t('login.password') }}</label>
         <input v-model="password" type="password" autocomplete="current-password" />
         <p v-if="error" class="error">{{ error }}</p>
@@ -42,8 +42,7 @@ async function submit() {
         </button>
       </form>
       <div class="hint">
-        <strong>{{ t('login.demoAccounts') }}</strong> ({{ t('login.passwordIs') }}: <code>password123</code>)<br />
-        admin@site.test · alice@site.test · bob@site.test · joe@site.test
+        {{ t('login.demoAccounts') }}
       </div>
     </div>
   </div>

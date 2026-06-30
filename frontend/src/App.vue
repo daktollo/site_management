@@ -64,6 +64,7 @@ async function changePassword() {
     <router-link to="/payments">{{ t('nav.payments') }}</router-link>
     <router-link to="/cleaning">{{ t('nav.cleaning') }}</router-link>
     <router-link to="/properties">{{ t('nav.properties') }}</router-link>
+    <router-link v-if="auth.isAdmin" to="/users">{{ t('nav.users') }}</router-link>
     <span class="spacer"></span>
     <button class="user-link" @click="openProfile">
       {{ auth.user?.full_name }} ({{ t('roles.' + auth.user?.role) }})
