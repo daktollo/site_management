@@ -25,17 +25,20 @@ a { color: var(--primary); text-decoration: none; }
 .navbar {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.25rem;
   padding: 0.75rem 1.5rem;
   background: var(--card);
   border-bottom: 1px solid var(--border);
 }
-.navbar .brand { font-weight: 700; font-size: 1.1rem; }
-.navbar a { color: var(--muted); font-weight: 500; padding: 0.25rem 0; }
+.navbar .brand { order: 1; font-weight: 700; font-size: 1.1rem; white-space: nowrap; }
+.nav-links { order: 2; display: flex; align-items: center; gap: 1.25rem; }
+.nav-actions { order: 3; margin-left: auto; display: flex; align-items: center; gap: 0.5rem; }
+.navbar a { color: var(--muted); font-weight: 500; padding: 0.25rem 0; white-space: nowrap; }
 .navbar a.router-link-active { color: var(--primary); border-bottom: 2px solid var(--primary); }
 .navbar .spacer { flex: 1; }
 .navbar .user { color: var(--muted); font-size: 0.9rem; }
-.navbar .user-link { background: none; border: none; color: var(--muted); font-size: 0.9rem; font-weight: 500; cursor: pointer; padding: 0.25rem 0.4rem; border-radius: 6px; }
+.navbar .user-link { background: none; border: none; color: var(--muted); font-size: 0.9rem; font-weight: 500; cursor: pointer; padding: 0.25rem 0.4rem; border-radius: 6px; white-space: nowrap; }
 .navbar .user-link:hover { color: var(--primary); background: #f3f4f6; text-decoration: underline; }
 
 .container { max-width: 960px; margin: 1.5rem auto; padding: 0 1.5rem; }
@@ -116,9 +119,46 @@ label { display: block; font-size: 0.85rem; color: var(--muted); margin: 0.6rem 
 .cal-done:hover { background: #15803d; }
 .cal-check { color: var(--green); font-weight: 700; flex: none; }
 
-@media (max-width: 640px) {
-  .cal-day { min-height: 70px; }
+/* ---- Mobile ---- */
+@media (max-width: 720px) {
+  /* Navbar: brand + actions on row 1, scrollable links on row 2 */
+  .navbar { gap: 0.5rem 0.75rem; padding: 0.6rem 0.9rem; }
+  .navbar .brand { font-size: 1rem; }
+  .nav-actions { order: 2; margin-left: auto; }
+  .nav-links {
+    order: 3;
+    flex-basis: 100%;
+    overflow-x: auto;
+    gap: 1.1rem;
+    padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .nav-links::-webkit-scrollbar { height: 0; }
+
+  /* Roomier tap targets */
+  .navbar .ghost.small { padding: 0.35rem 0.6rem; }
+
+  /* Layout spacing */
+  .container { margin: 1rem auto; padding: 0 0.9rem; }
+  .card { padding: 1rem; border-radius: 8px; overflow-x: auto; }
+  h1 { font-size: 1.3rem; }
+
+  /* Wide tables scroll horizontally instead of breaking the layout */
+  .card table { display: block; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .kv { display: table; width: 100%; }
+
+  /* Calendar stays usable; allow horizontal scroll if cramped */
+  .card .calendar { min-width: 480px; }
+  .cal-day { min-height: 64px; }
   .cal-chip { font-size: 0.62rem; }
+
+  /* Modal uses more of the screen */
+  .modal-overlay { padding: 3vh 0.6rem; }
+  .modal { padding: 1rem; }
+}
+
+@media (max-width: 460px) {
+  .role-tag { display: none; }
 }
 
 /* Modal */

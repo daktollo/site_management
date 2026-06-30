@@ -60,17 +60,20 @@ async function changePassword() {
 <template>
   <nav v-if="auth.isAuthenticated" class="navbar">
     <span class="brand">🏢 {{ t('brand') }}</span>
-    <router-link to="/">{{ t('nav.dashboard') }}</router-link>
-    <router-link to="/payments">{{ t('nav.payments') }}</router-link>
-    <router-link to="/cleaning">{{ t('nav.cleaning') }}</router-link>
-    <router-link to="/properties">{{ t('nav.properties') }}</router-link>
-    <router-link v-if="auth.isAdmin" to="/users">{{ t('nav.users') }}</router-link>
-    <span class="spacer"></span>
-    <button class="user-link" @click="openProfile">
-      {{ auth.user?.full_name }} ({{ t('roles.' + auth.user?.role) }})
-    </button>
-    <button class="ghost small" @click="toggleLocale">{{ locale === 'tr' ? 'EN' : 'TR' }}</button>
-    <button class="ghost small" @click="logout">{{ t('nav.logout') }}</button>
+    <div class="nav-actions">
+      <button class="user-link" @click="openProfile">
+        {{ auth.user?.full_name }} <span class="role-tag">({{ t('roles.' + auth.user?.role) }})</span>
+      </button>
+      <button class="ghost small" @click="toggleLocale">{{ locale === 'tr' ? 'EN' : 'TR' }}</button>
+      <button class="ghost small" @click="logout">{{ t('nav.logout') }}</button>
+    </div>
+    <div class="nav-links">
+      <router-link to="/">{{ t('nav.dashboard') }}</router-link>
+      <router-link to="/payments">{{ t('nav.payments') }}</router-link>
+      <router-link to="/cleaning">{{ t('nav.cleaning') }}</router-link>
+      <router-link to="/properties">{{ t('nav.properties') }}</router-link>
+      <router-link v-if="auth.isAdmin" to="/users">{{ t('nav.users') }}</router-link>
+    </div>
   </nav>
 
   <!-- Language toggle is also available before login -->
