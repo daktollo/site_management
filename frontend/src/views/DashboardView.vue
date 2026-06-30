@@ -1,9 +1,11 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import api from '../services/api.js';
 import { useAuthStore } from '../stores/auth.js';
 
 const auth = useAuthStore();
+const { t } = useI18n();
 const myShares = ref([]);
 const myCleaning = ref([]);
 const debts = ref([]);
@@ -32,26 +34,26 @@ onMounted(async () => {
 
 <template>
   <div class="container">
-    <h1>Welcome, {{ auth.user?.full_name }}</h1>
-    <div v-if="loading" class="muted">Loading…</div>
+    <h1>{{ t('dashboard.welcome', { name: auth.user?.full_name }) }}</h1>
+    <div v-if="loading" class="muted">{{ t('common.loading') }}</div>
     <template v-else>
       <div class="row">
         <div class="card">
-          <div class="muted">My outstanding debt</div>
+          <div class="muted">{{ t('dashboard.myDebt') }}</div>
           <div class="stat" :style="{ color: myOutstanding > 0 ? 'var(--red)' : 'var(--green)' }">
             {{ money(myOutstanding) }}
           </div>
         </div>
         <div class="card">
-          <div class="muted">My pending cleaning tasks</div>
+          <div class="muted">{{ t('dashboard.myPendingTasks') }}</div>
           <div class="stat">{{ myPendingTasks }}</div>
         </div>
       </div>
 
       <div class="card">
-        <h2>Everyone's outstanding debt</h2>
+        <h2>{{ t('dashboard.everyoneDebt') }}</h2>
         <table>
-          <thead><tr><th>Resident</th><th>Outstanding</th><th>Paid to date</th></tr></thead>
+          <thead><tr><th>{{ t('dashboard.resident') }}</th><th>{{ t('dashboard.outstanding') }}</th><th>{{ t('dashboard.paidToDate') }}</th></tr></thead>
           <tbody>
             <tr v-for="d in debts" :key="d.id">
               <td>{{ d.full_name }}</td>

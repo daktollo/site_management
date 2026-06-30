@@ -1,10 +1,12 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '../stores/auth.js';
 
 const auth = useAuthStore();
 const router = useRouter();
+const { t } = useI18n();
 
 const email = ref('alice@site.test');
 const password = ref('password123');
@@ -18,7 +20,7 @@ async function submit() {
     await auth.login(email.value, password.value);
     router.push({ name: 'dashboard' });
   } catch (e) {
-    error.value = e.response?.data?.error || 'Login failed';
+    error.value = e.response?.data?.error || t('login.failed');
   } finally {
     loading.value = false;
   }
@@ -28,19 +30,19 @@ async function submit() {
 <template>
   <div class="login-wrap">
     <div class="card">
-      <h1>Sign in</h1>
+      <h1>{{ t('login.title') }}</h1>
       <form @submit.prevent="submit">
-        <label>Email</label>
+        <label>{{ t('login.email') }}</label>
         <input v-model="email" type="email" autocomplete="username" />
-        <label>Password</label>
+        <label>{{ t('login.password') }}</label>
         <input v-model="password" type="password" autocomplete="current-password" />
         <p v-if="error" class="error">{{ error }}</p>
         <button style="width:100%; margin-top:1rem" :disabled="loading">
-          {{ loading ? 'Signing in…' : 'Sign in' }}
+          {{ loading ? t('login.signingIn') : t('login.signIn') }}
         </button>
       </form>
       <div class="hint">
-        <strong>Demo accounts</strong> (password: <code>password123</code>)<br />
+        <strong>{{ t('login.demoAccounts') }}</strong> ({{ t('login.passwordIs') }}: <code>password123</code>)<br />
         admin@site.test · alice@site.test · bob@site.test · joe@site.test
       </div>
     </div>

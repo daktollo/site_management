@@ -1,9 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import api from '../services/api.js';
 import { useAuthStore } from '../stores/auth.js';
 
 const auth = useAuthStore();
+const { t } = useI18n();
 const assignments = ref([]);
 const tasks = ref([]);
 const users = ref([]);
@@ -15,9 +17,9 @@ const newTask = ref({ name: '', description: '', frequency: 'daily' });
 async function load() {
   const calls = [api.get('/cleaning/assignments'), api.get('/cleaning/tasks')];
   if (auth.isAdmin) calls.push(api.get('/users'));
-  const [a, t, u] = await Promise.all(calls);
+  const [a, tk, u] = await Promise.all(calls);
   assignments.value = a.data;
-  tasks.value = t.data;
+  tasks.value = tk.data;
   if (u) users.value = u.data;
 }
 
@@ -27,7 +29,7 @@ async function markDone(id) {
     await api.post(`/cleaning/assignments/${id}/done`);
     await load();
   } catch (e) {
-    error.value = e.response?.data?.error || 'Failed to mark done';
+    error.value = e.response?.data?.error || t('cleaning.failedDone');
   }
 }
 
@@ -38,7 +40,7 @@ async function createTask() {
     newTask.value = { name: '', description: '', frequency: 'daily' };
     await load();
   } catch (e) {
-    error.value = e.response?.data?.error || 'Failed to create task';
+    error.value = e.response?.data?.error || t('cleaning.failedTask');
   }
 }
 
@@ -49,7 +51,7 @@ async function createAssignment() {
     newAssignment.value = { task_id: '', assignee_id: '', scheduled_date: '' };
     await load();
   } catch (e) {
-    error.value = e.response?.data?.error || 'Failed to assign';
+    error.value = e.response?.data?.error || t('cleaning.failedAssign');
   }
 }
 
@@ -58,25 +60,25 @@ onMounted(load);
 
 <template>
   <div class="container">
-    <h1>Cleaning schedules</h1>
+    <h1>{{ t('cleaning.title') }}</h1>
     <p v-if="error" class="error">{{ error }}</p>
 
     <div class="card">
-      <h2>Assignments</h2>
+      <h2>{{ t('cleaning.assignments') }}</h2>
       <table>
-        <thead><tr><th>Task</th><th>Frequency</th><th>Assignee</th><th>Date</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>{{ t('cleaning.task') }}</th><th>{{ t('cleaning.frequency') }}</th><th>{{ t('cleaning.assignee') }}</th><th>{{ t('common.date') }}</th><th>{{ t('common.status') }}</th><th></th></tr></thead>
         <tbody>
           <tr v-for="a in assignments" :key="a.id">
             <td><strong>{{ a.task_name }}</strong></td>
-            <td class="muted">{{ a.frequency }}</td>
+            <td class="muted">{{ t('frequencies.' + a.frequency) }}</td>
             <td>{{ a.assignee_name }}</td>
             <td class="muted">{{ a.scheduled_date.slice(0, 10) }}</td>
-            <td><span class="badge" :class="a.status">{{ a.status }}</span></td>
+            <td><span class="badge" :class="a.status">{{ t('status.' + a.status) }}</span></td>
             <td>
               <button
                 v-if="a.status === 'pending' && (a.assignee_id === auth.user.id || auth.isAdmin)"
                 class="small" @click="markDone(a.id)">
-                Mark done
+                {{ t('cleaning.markDone') }}
               </button>
             </td>
           </tr>
@@ -85,11 +87,11 @@ onMounted(load);
     </div>
 
     <div class="card">
-      <h2>Cleaning tasks</h2>
+      <h2>{{ t('cleaning.tasks') }}</h2>
       <ul>
-        <li v-for="t in tasks" :key="t.id">
-          <strong>{{ t.name }}</strong> <span class="muted">({{ t.frequency }})</span>
-          <span v-if="t.description"> — {{ t.description }}</span>
+        <li v-for="task in tasks" :key="task.id">
+          <strong>{{ task.name }}</strong> <span class="muted">({{ t('frequencies.' + task.frequency) }})</span>
+          <span v-if="task.description"> — {{ task.description }}</span>
         </li>
       </ul>
     </div>
@@ -97,47 +99,47 @@ onMounted(load);
     <!-- Admin tools -->
     <template v-if="auth.isAdmin">
       <div class="card">
-        <h2>New cleaning task</h2>
+        <h2>{{ t('cleaning.newTask') }}</h2>
         <div class="row">
-          <div><label>Name</label><input v-model="newTask.name" /></div>
+          <div><label>{{ t('common.name') }}</label><input v-model="newTask.name" /></div>
           <div>
-            <label>Frequency</label>
+            <label>{{ t('cleaning.frequency') }}</label>
             <select v-model="newTask.frequency">
-              <option value="daily">daily</option>
-              <option value="weekly">weekly</option>
+              <option value="daily">{{ t('frequencies.daily') }}</option>
+              <option value="weekly">{{ t('frequencies.weekly') }}</option>
             </select>
           </div>
         </div>
-        <label>Description (optional)</label>
+        <label>{{ t('common.description') }} ({{ t('common.optional') }})</label>
         <input v-model="newTask.description" />
-        <button style="margin-top:1rem" :disabled="!newTask.name" @click="createTask">Add task</button>
+        <button style="margin-top:1rem" :disabled="!newTask.name" @click="createTask">{{ t('cleaning.addTask') }}</button>
       </div>
 
       <div class="card">
-        <h2>Assign a task</h2>
+        <h2>{{ t('cleaning.assignTask') }}</h2>
         <div class="row">
           <div>
-            <label>Task</label>
+            <label>{{ t('cleaning.task') }}</label>
             <select v-model="newAssignment.task_id">
-              <option value="" disabled>Select task</option>
-              <option v-for="t in tasks" :key="t.id" :value="t.id">{{ t.name }}</option>
+              <option value="" disabled>{{ t('cleaning.selectTask') }}</option>
+              <option v-for="task in tasks" :key="task.id" :value="task.id">{{ task.name }}</option>
             </select>
           </div>
           <div>
-            <label>Assignee</label>
+            <label>{{ t('cleaning.assignee') }}</label>
             <select v-model="newAssignment.assignee_id">
-              <option value="" disabled>Select person</option>
+              <option value="" disabled>{{ t('cleaning.selectPerson') }}</option>
               <option v-for="u in users" :key="u.id" :value="u.id">{{ u.full_name }}</option>
             </select>
           </div>
           <div>
-            <label>Date</label>
+            <label>{{ t('common.date') }}</label>
             <input v-model="newAssignment.scheduled_date" type="date" />
           </div>
         </div>
         <button style="margin-top:1rem"
           :disabled="!newAssignment.task_id || !newAssignment.assignee_id || !newAssignment.scheduled_date"
-          @click="createAssignment">Assign</button>
+          @click="createAssignment">{{ t('cleaning.assign') }}</button>
       </div>
     </template>
   </div>

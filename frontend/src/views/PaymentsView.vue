@@ -1,9 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import api from '../services/api.js';
 import { useAuthStore } from '../stores/auth.js';
 
 const auth = useAuthStore();
+const { t } = useI18n();
 const myShares = ref([]);
 const transactions = ref([]);
 const users = ref([]);
@@ -36,7 +38,7 @@ async function pay(shareId) {
     await api.post(`/payments/shares/${shareId}/pay`);
     await load();
   } catch (e) {
-    error.value = e.response?.data?.error || 'Failed to mark as paid';
+    error.value = e.response?.data?.error || t('payments.failedPay');
   }
 }
 
@@ -70,7 +72,7 @@ async function createTransaction() {
     participants.value.forEach((p) => { p.include = false; p.amount_due = ''; });
     await load();
   } catch (e) {
-    error.value = e.response?.data?.error || 'Failed to create transaction';
+    error.value = e.response?.data?.error || t('payments.failedCreate');
   } finally {
     creating.value = false;
   }
@@ -81,15 +83,15 @@ onMounted(load);
 
 <template>
   <div class="container">
-    <h1>Payments</h1>
+    <h1>{{ t('payments.title') }}</h1>
     <p v-if="error" class="error">{{ error }}</p>
 
     <!-- The Payments tab: payment-type transactions others created that I owe -->
     <div class="card">
-      <h2>My payments</h2>
-      <p class="muted" v-if="!myShares.length">Nothing to pay right now.</p>
+      <h2>{{ t('payments.myPayments') }}</h2>
+      <p class="muted" v-if="!myShares.length">{{ t('payments.nothingToPay') }}</p>
       <table v-else>
-        <thead><tr><th>Transaction</th><th>From</th><th>Due</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>{{ t('payments.transaction') }}</th><th>{{ t('payments.from') }}</th><th>{{ t('payments.due') }}</th><th>{{ t('payments.amount') }}</th><th>{{ t('common.status') }}</th><th></th></tr></thead>
         <tbody>
           <tr v-for="s in myShares" :key="s.share_id">
             <td>
@@ -97,12 +99,12 @@ onMounted(load);
               <div class="muted" v-if="s.description">{{ s.description }}</div>
             </td>
             <td>{{ s.created_by_name }}</td>
-            <td class="muted">{{ s.due_date ? s.due_date.slice(0, 10) : '—' }}</td>
+            <td class="muted">{{ s.due_date ? s.due_date.slice(0, 10) : t('common.none') }}</td>
             <td>{{ money(s.amount_due) }}</td>
-            <td><span class="badge" :class="s.status">{{ s.status }}</span></td>
+            <td><span class="badge" :class="s.status">{{ t('status.' + s.status) }}</span></td>
             <td>
               <button v-if="s.status === 'pending'" class="small" @click="pay(s.share_id)">
-                Mark as paid
+                {{ t('payments.markPaid') }}
               </button>
             </td>
           </tr>
@@ -112,41 +114,41 @@ onMounted(load);
 
     <!-- Create a new named transaction -->
     <div class="card">
-      <h2>Create a transaction</h2>
+      <h2>{{ t('payments.createTitle') }}</h2>
       <div class="row">
         <div>
-          <label>Name</label>
-          <input v-model="form.name" placeholder="e.g. July water bill" />
+          <label>{{ t('common.name') }}</label>
+          <input v-model="form.name" :placeholder="t('payments.namePlaceholder')" />
         </div>
         <div>
-          <label>Type</label>
+          <label>{{ t('payments.type') }}</label>
           <select v-model="form.type">
-            <option value="payment">payment</option>
-            <option value="expense">expense</option>
-            <option value="income">income</option>
+            <option value="payment">{{ t('txTypes.payment') }}</option>
+            <option value="expense">{{ t('txTypes.expense') }}</option>
+            <option value="income">{{ t('txTypes.income') }}</option>
           </select>
         </div>
       </div>
       <div class="row">
         <div>
-          <label>Total amount</label>
+          <label>{{ t('payments.totalAmount') }}</label>
           <input v-model="form.amount" type="number" min="0" step="0.01" />
         </div>
         <div>
-          <label>Due date (optional)</label>
+          <label>{{ t('payments.dueDate') }} ({{ t('common.optional') }})</label>
           <input v-model="form.due_date" type="date" />
         </div>
       </div>
-      <label>Description (optional)</label>
+      <label>{{ t('common.description') }} ({{ t('common.optional') }})</label>
       <input v-model="form.description" />
 
       <template v-if="form.type === 'payment'">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-top:1rem">
-          <h2 style="margin:0">Who owes a share?</h2>
-          <button type="button" class="ghost small" @click="splitEvenly">Split evenly</button>
+          <h2 style="margin:0">{{ t('payments.whoOwes') }}</h2>
+          <button type="button" class="ghost small" @click="splitEvenly">{{ t('payments.splitEvenly') }}</button>
         </div>
         <table>
-          <thead><tr><th></th><th>User</th><th>Amount due</th></tr></thead>
+          <thead><tr><th></th><th>{{ t('payments.user') }}</th><th>{{ t('payments.amountDue') }}</th></tr></thead>
           <tbody>
             <tr v-for="p in participants" :key="p.user_id">
               <td style="width:2rem"><input type="checkbox" style="width:auto" v-model="p.include" /></td>
@@ -160,26 +162,26 @@ onMounted(load);
       </template>
 
       <button style="margin-top:1rem" :disabled="creating || !form.name || !form.amount" @click="createTransaction">
-        {{ creating ? 'Creating…' : 'Create transaction' }}
+        {{ creating ? t('payments.creating') : t('payments.create') }}
       </button>
     </div>
 
     <!-- All transactions -->
     <div class="card">
-      <h2>All transactions</h2>
+      <h2>{{ t('payments.allTransactions') }}</h2>
       <table>
-        <thead><tr><th>Name</th><th>Type</th><th>Amount</th><th>Created by</th><th>Shares</th></tr></thead>
+        <thead><tr><th>{{ t('common.name') }}</th><th>{{ t('payments.type') }}</th><th>{{ t('payments.amount') }}</th><th>{{ t('payments.createdBy') }}</th><th>{{ t('payments.shares') }}</th></tr></thead>
         <tbody>
-          <tr v-for="t in transactions" :key="t.id">
-            <td><strong>{{ t.name }}</strong></td>
-            <td>{{ t.type }}</td>
-            <td>{{ money(t.amount) }}</td>
-            <td>{{ t.created_by_name }}</td>
+          <tr v-for="tx in transactions" :key="tx.id">
+            <td><strong>{{ tx.name }}</strong></td>
+            <td>{{ t('txTypes.' + tx.type) }}</td>
+            <td>{{ money(tx.amount) }}</td>
+            <td>{{ tx.created_by_name }}</td>
             <td>
-              <span v-for="s in t.shares" :key="s.id" class="badge" :class="s.status" style="margin:0 0.25rem 0.25rem 0">
+              <span v-for="s in tx.shares" :key="s.id" class="badge" :class="s.status" style="margin:0 0.25rem 0.25rem 0">
                 {{ s.user_name }} {{ money(s.amount_due) }}
               </span>
-              <span v-if="!t.shares.length" class="muted">—</span>
+              <span v-if="!tx.shares.length" class="muted">{{ t('common.none') }}</span>
             </td>
           </tr>
         </tbody>

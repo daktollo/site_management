@@ -18,6 +18,12 @@ and [database](../docker/README.md) first. Sign in with a demo account (password
 > The dev server uses file-watch polling to avoid the host inotify limit
 > (`ENOSPC`); see `server.watch` in `vite.config.js`.
 
+## Languages
+
+The UI ships in **Turkish (default)** and English via `vue-i18n`. A TR/EN toggle
+button sits in the top-right (also on the login screen); the choice is saved to
+`localStorage`. Messages live in [`src/i18n/`](src/i18n/).
+
 ## Structure
 
 ```
@@ -26,6 +32,7 @@ src/
 ├── App.vue              shell + navigation
 ├── style.css           global styles
 ├── router/index.js     routes + auth guard
+├── i18n/               vue-i18n setup + tr/en messages (default Turkish)
 ├── stores/auth.js      Pinia auth store (token + user)
 ├── services/api.js     axios instance with JWT interceptor
 └── views/
