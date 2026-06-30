@@ -35,7 +35,7 @@ export default {
   dashboard: {
     welcome: 'Hoş geldiniz, {name}',
     myDebt: 'Toplam borcum',
-    myPendingTasks: 'Bekleyen temizlik görevlerim',
+    myPendingTasks: '7 gün içinde bekleyen temizlik görevlerim',
     everyoneDebt: 'Herkesin güncel borcu',
     resident: 'Sakin',
     outstanding: 'Borç',

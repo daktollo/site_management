@@ -35,7 +35,7 @@ export default {
   dashboard: {
     welcome: 'Welcome, {name}',
     myDebt: 'My outstanding debt',
-    myPendingTasks: 'My pending cleaning tasks',
+    myPendingTasks: 'My pending cleaning tasks (next 7 days)',
     everyoneDebt: "Everyone's outstanding debt",
     resident: 'Resident',
     outstanding: 'Outstanding',

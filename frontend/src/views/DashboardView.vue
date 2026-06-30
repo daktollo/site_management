@@ -15,7 +15,25 @@ const myOutstanding = computed(() =>
   myShares.value.filter((s) => s.status === 'pending')
     .reduce((sum, s) => sum + Number(s.amount_due), 0)
 );
-const myPendingTasks = computed(() => myCleaning.value.filter((a) => a.status === 'pending').length);
+
+// Local 'YYYY-MM-DD' for a date, matching the API's scheduled_date format.
+function ymd(d) {
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+// Pending cleaning tasks scheduled within the next 7 days (today inclusive).
+const myPendingTasks = computed(() => {
+  const today = new Date();
+  const limit = new Date(today);
+  limit.setDate(limit.getDate() + 7);
+  const todayKey = ymd(today);
+  const limitKey = ymd(limit);
+  return myCleaning.value.filter(
+    (a) => a.status === 'pending' && a.scheduled_date >= todayKey && a.scheduled_date <= limitKey
+  ).length;
+});
 
 function money(n) { return '₺' + Number(n).toFixed(2); }
 
