@@ -54,8 +54,8 @@ router.get('/assignments', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// POST /api/cleaning/assignments — admin assigns a task
-router.post('/assignments', requireRole('admin'), async (req, res, next) => {
+// POST /api/cleaning/assignments — assign a task for a day (any authenticated user)
+router.post('/assignments', async (req, res, next) => {
   try {
     const { task_id, assignee_id, scheduled_date } = req.body || {};
     if (!task_id || !assignee_id || !scheduled_date) {
@@ -92,6 +92,23 @@ router.post('/assignments/:id/done', async (req, res, next) => {
       [req.params.id]
     );
     res.json(updated[0]);
+  } catch (err) { next(err); }
+});
+
+// DELETE /api/cleaning/assignments/:id — cancel an assignment (assignee or admin)
+router.delete('/assignments/:id', async (req, res, next) => {
+  try {
+    const { rows } = await query(
+      'SELECT id, assignee_id FROM cleaning_assignments WHERE id = $1',
+      [req.params.id]
+    );
+    const a = rows[0];
+    if (!a) return res.status(404).json({ error: 'Assignment not found' });
+    if (a.assignee_id !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'You can only cancel your own assignment' });
+    }
+    await query('DELETE FROM cleaning_assignments WHERE id = $1', [req.params.id]);
+    res.json({ ok: true });
   } catch (err) { next(err); }
 });
 

@@ -8,18 +8,15 @@ BEGIN;
 -- bcrypt hash of 'password123'
 \set pw '''$2a$10$DZaZORJCewdQ8yrgmwOTq.f7w/jokGy.Imze1s6rQTxsW9hA1/LbK'''
 
--- Properties
+-- Property (we manage a single block)
 INSERT INTO properties (name, address) VALUES
-    ('Green Valley Residences', '123 Park Avenue, Springfield'),
-    ('Riverside Towers', '45 River Road, Springfield');
+    ('Green Valley Residences', '123 Park Avenue, Springfield');
 
--- Units (property_id 1 = Green Valley, 2 = Riverside)
+-- Units (all in the single block, property_id 1)
 INSERT INTO units (property_id, label) VALUES
     (1, 'Block A — Flat 1'),
     (1, 'Block A — Flat 2'),
-    (1, 'Block A — Flat 3'),
-    (2, 'Tower 1 — Apt 101'),
-    (2, 'Tower 1 — Apt 102');
+    (1, 'Block A — Flat 3');
 
 -- Users (password for all = 'password123')
 INSERT INTO users (full_name, email, password_hash, role, unit_id) VALUES

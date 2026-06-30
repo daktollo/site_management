@@ -12,7 +12,6 @@ const tasks = ref([]);
 const users = ref([]);
 const error = ref('');
 
-const newAssignment = ref({ task_id: '', assignee_id: '', scheduled_date: '' });
 const newTask = ref({ name: '', description: '', frequency: 'daily' });
 
 // --- date helpers (local, no UTC shifting) ---
@@ -37,6 +36,14 @@ const weekdayNames = computed(() => {
   // 2024-01-01 is a Monday → render a Monday-first week
   return Array.from({ length: 7 }, (_, i) => fmt.format(new Date(2024, 0, 1 + i)));
 });
+
+function longDate(key) {
+  if (!key) return '';
+  const [y, m, d] = key.split('-').map(Number);
+  return new Intl.DateTimeFormat(intlLocale.value, {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  }).format(new Date(y, m - 1, d));
+}
 
 // assignments grouped by 'YYYY-MM-DD'
 const byDate = computed(() => {
@@ -84,14 +91,35 @@ function goToday() {
 function canComplete(a) {
   return a.status === 'pending' && (a.assignee_id === auth.user.id || auth.isAdmin);
 }
+function canCancel(a) {
+  return a.assignee_id === auth.user.id || auth.isAdmin;
+}
+
+// --- day detail panel ---
+const selectedDay = ref(null);
+const panelAssign = ref({ task_id: '', assignee_id: '' });
+const selectedDayItems = computed(() =>
+  selectedDay.value ? byDate.value[selectedDay.value] || [] : []
+);
+
+function openDay(key) {
+  selectedDay.value = key;
+  panelAssign.value = { task_id: '', assignee_id: '' };
+  error.value = '';
+}
+function closeDay() {
+  selectedDay.value = null;
+}
 
 async function load() {
-  const calls = [api.get('/cleaning/assignments'), api.get('/cleaning/tasks')];
-  if (auth.isAdmin) calls.push(api.get('/users'));
-  const [a, tk, u] = await Promise.all(calls);
+  const [a, tk, u] = await Promise.all([
+    api.get('/cleaning/assignments'),
+    api.get('/cleaning/tasks'),
+    api.get('/users'),
+  ]);
   assignments.value = a.data;
   tasks.value = tk.data;
-  if (u) users.value = u.data;
+  users.value = u.data;
 }
 
 async function markDone(id) {
@@ -102,6 +130,27 @@ async function markDone(id) {
   } catch (e) { error.value = e.response?.data?.error || t('cleaning.failedDone'); }
 }
 
+async function cancelAssignment(id) {
+  error.value = '';
+  try {
+    await api.delete(`/cleaning/assignments/${id}`);
+    await load();
+  } catch (e) { error.value = e.response?.data?.error || t('cleaning.failedCancel'); }
+}
+
+async function assignForDay() {
+  error.value = '';
+  try {
+    await api.post('/cleaning/assignments', {
+      task_id: panelAssign.value.task_id,
+      assignee_id: panelAssign.value.assignee_id,
+      scheduled_date: selectedDay.value,
+    });
+    panelAssign.value = { task_id: '', assignee_id: '' };
+    await load();
+  } catch (e) { error.value = e.response?.data?.error || t('cleaning.failedAssign'); }
+}
+
 async function createTask() {
   error.value = '';
   try {
@@ -109,15 +158,6 @@ async function createTask() {
     newTask.value = { name: '', description: '', frequency: 'daily' };
     await load();
   } catch (e) { error.value = e.response?.data?.error || t('cleaning.failedTask'); }
-}
-
-async function createAssignment() {
-  error.value = '';
-  try {
-    await api.post('/cleaning/assignments', newAssignment.value);
-    newAssignment.value = { task_id: '', assignee_id: '', scheduled_date: '' };
-    await load();
-  } catch (e) { error.value = e.response?.data?.error || t('cleaning.failedAssign'); }
 }
 
 onMounted(load);
@@ -141,45 +181,26 @@ onMounted(load);
         </span>
         <button class="ghost small" @click="goToday">{{ t('cleaning.today') }}</button>
       </div>
+      <p class="muted" style="margin:-0.25rem 0 0.75rem; font-size:0.82rem">{{ t('cleaning.clickHint') }}</p>
 
       <div class="calendar">
         <div class="cal-weekday" v-for="w in weekdayNames" :key="w">{{ w }}</div>
         <template v-for="(week, wi) in weeks" :key="wi">
           <div v-for="cell in week" :key="cell.key"
-               class="cal-day" :class="{ other: !cell.inMonth, today: cell.isToday }">
+               class="cal-day" :class="{ other: !cell.inMonth, today: cell.isToday }"
+               @click="openDay(cell.key)">
             <div class="cal-daynum">{{ cell.day }}</div>
             <div v-for="a in cell.items" :key="a.id" class="cal-chip" :class="a.status"
                  :title="a.task_name + ' — ' + a.assignee_name">
               <div class="cal-chip-task">{{ a.task_name }}</div>
               <div class="cal-chip-row">
                 <span class="cal-chip-person">{{ a.assignee_name }}</span>
-                <button v-if="canComplete(a)" class="cal-done" :title="t('cleaning.markDone')"
-                        @click="markDone(a.id)">✓</button>
-                <span v-else-if="a.status === 'done'" class="cal-check" :title="t('status.done')">✓</span>
+                <span v-if="a.status === 'done'" class="cal-check" :title="t('status.done')">✓</span>
               </div>
             </div>
           </div>
         </template>
       </div>
-    </div>
-
-    <!-- Today's tasks at a glance -->
-    <div class="card">
-      <h2>{{ t('cleaning.todayLabel') }} {{ todayKey }}</h2>
-      <p class="muted" v-if="!todayItems.length">{{ t('cleaning.noToday') }}</p>
-      <table v-else>
-        <thead><tr><th>{{ t('cleaning.task') }}</th><th>{{ t('cleaning.assignee') }}</th><th>{{ t('common.status') }}</th><th></th></tr></thead>
-        <tbody>
-          <tr v-for="a in todayItems" :key="a.id">
-            <td><strong>{{ a.task_name }}</strong> <span class="muted">({{ t('frequencies.' + a.frequency) }})</span></td>
-            <td>{{ a.assignee_name }}</td>
-            <td><span class="badge" :class="a.status">{{ t('status.' + a.status) }}</span></td>
-            <td>
-              <button v-if="canComplete(a)" class="small" @click="markDone(a.id)">{{ t('cleaning.markDone') }}</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
     </div>
 
     <!-- Tasks -->
@@ -193,51 +214,72 @@ onMounted(load);
       </ul>
     </div>
 
-    <!-- Admin tools -->
-    <template v-if="auth.isAdmin">
-      <div class="card">
-        <h2>{{ t('cleaning.newTask') }}</h2>
-        <div class="row">
-          <div><label>{{ t('common.name') }}</label><input v-model="newTask.name" /></div>
-          <div>
-            <label>{{ t('cleaning.frequency') }}</label>
-            <select v-model="newTask.frequency">
-              <option value="daily">{{ t('frequencies.daily') }}</option>
-              <option value="weekly">{{ t('frequencies.weekly') }}</option>
-            </select>
-          </div>
+    <!-- Admin: define a new task -->
+    <div v-if="auth.isAdmin" class="card">
+      <h2>{{ t('cleaning.newTask') }}</h2>
+      <div class="row">
+        <div><label>{{ t('common.name') }}</label><input v-model="newTask.name" /></div>
+        <div>
+          <label>{{ t('cleaning.frequency') }}</label>
+          <select v-model="newTask.frequency">
+            <option value="daily">{{ t('frequencies.daily') }}</option>
+            <option value="weekly">{{ t('frequencies.weekly') }}</option>
+          </select>
         </div>
-        <label>{{ t('common.description') }} ({{ t('common.optional') }})</label>
-        <input v-model="newTask.description" />
-        <button style="margin-top:1rem" :disabled="!newTask.name" @click="createTask">{{ t('cleaning.addTask') }}</button>
       </div>
+      <label>{{ t('common.description') }} ({{ t('common.optional') }})</label>
+      <input v-model="newTask.description" />
+      <button style="margin-top:1rem" :disabled="!newTask.name" @click="createTask">{{ t('cleaning.addTask') }}</button>
+    </div>
 
-      <div class="card">
-        <h2>{{ t('cleaning.assignTask') }}</h2>
+    <!-- Day detail panel -->
+    <div v-if="selectedDay" class="modal-overlay" @click.self="closeDay">
+      <div class="modal">
+        <div class="modal-head">
+          <h2 style="margin:0; text-transform:capitalize">{{ longDate(selectedDay) }}</h2>
+          <button class="ghost small" @click="closeDay">{{ t('cleaning.close') }}</button>
+        </div>
+        <p v-if="error" class="error">{{ error }}</p>
+
+        <h3 style="font-size:0.95rem; margin:0 0 0.5rem">{{ t('cleaning.dayTasks') }}</h3>
+        <p class="muted" v-if="!selectedDayItems.length">{{ t('cleaning.noTasksDay') }}</p>
+        <table v-else>
+          <tbody>
+            <tr v-for="a in selectedDayItems" :key="a.id">
+              <td>
+                <strong>{{ a.task_name }}</strong>
+                <div class="muted" style="font-size:0.82rem">{{ a.assignee_name }}</div>
+              </td>
+              <td><span class="badge" :class="a.status">{{ t('status.' + a.status) }}</span></td>
+              <td style="text-align:right; white-space:nowrap">
+                <button v-if="canComplete(a)" class="small" @click="markDone(a.id)">{{ t('cleaning.complete') }}</button>
+                <button v-if="canCancel(a)" class="ghost small danger" style="margin-left:0.35rem" @click="cancelAssignment(a.id)">{{ t('cleaning.cancel') }}</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 style="font-size:0.95rem; margin:1.25rem 0 0.5rem">{{ t('cleaning.assignForDay') }}</h3>
         <div class="row">
           <div>
             <label>{{ t('cleaning.task') }}</label>
-            <select v-model="newAssignment.task_id">
+            <select v-model="panelAssign.task_id">
               <option value="" disabled>{{ t('cleaning.selectTask') }}</option>
               <option v-for="task in tasks" :key="task.id" :value="task.id">{{ task.name }}</option>
             </select>
           </div>
           <div>
             <label>{{ t('cleaning.assignee') }}</label>
-            <select v-model="newAssignment.assignee_id">
+            <select v-model="panelAssign.assignee_id">
               <option value="" disabled>{{ t('cleaning.selectPerson') }}</option>
               <option v-for="u in users" :key="u.id" :value="u.id">{{ u.full_name }}</option>
             </select>
           </div>
-          <div>
-            <label>{{ t('common.date') }}</label>
-            <input v-model="newAssignment.scheduled_date" type="date" />
-          </div>
         </div>
-        <button style="margin-top:1rem"
-          :disabled="!newAssignment.task_id || !newAssignment.assignee_id || !newAssignment.scheduled_date"
-          @click="createAssignment">{{ t('cleaning.assign') }}</button>
+        <button style="margin-top:1rem" :disabled="!panelAssign.task_id || !panelAssign.assignee_id" @click="assignForDay">
+          {{ t('cleaning.assign') }}
+        </button>
       </div>
-    </template>
+    </div>
   </div>
 </template>
