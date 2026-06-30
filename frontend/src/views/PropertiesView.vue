@@ -39,9 +39,6 @@ onMounted(load);
 
 <template>
   <div class="container">
-    <h1>{{ t('properties.title') }}</h1>
-    <p v-if="error" class="error">{{ error }}</p>
-
     <div v-for="p in properties" :key="p.id" class="card">
       <h2>{{ p.name }}</h2>
       <p class="muted" v-if="p.address">{{ p.address }}</p>

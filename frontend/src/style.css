@@ -35,6 +35,8 @@ a { color: var(--primary); text-decoration: none; }
 .navbar a.router-link-active { color: var(--primary); border-bottom: 2px solid var(--primary); }
 .navbar .spacer { flex: 1; }
 .navbar .user { color: var(--muted); font-size: 0.9rem; }
+.navbar .user-link { background: none; border: none; color: var(--muted); font-size: 0.9rem; font-weight: 500; cursor: pointer; padding: 0.25rem 0.4rem; border-radius: 6px; }
+.navbar .user-link:hover { color: var(--primary); background: #f3f4f6; text-decoration: underline; }
 
 .container { max-width: 960px; margin: 1.5rem auto; padding: 0 1.5rem; }
 
