@@ -20,6 +20,7 @@ export default {
     date: 'Date',
     status: 'Status',
     close: 'Close',
+    all: 'All',
   },
   login: {
     title: 'Sign in',
@@ -70,6 +71,10 @@ export default {
     notPaid: 'Not paid',
     details: 'Transaction details',
     detailsHint: 'Click a transaction to see details.',
+    searchPlaceholder: 'Search by name…',
+    noResults: 'No matching transactions.',
+    allTypes: 'All types',
+    allCreators: 'All creators',
   },
   cleaning: {
     title: 'Cleaning schedules',

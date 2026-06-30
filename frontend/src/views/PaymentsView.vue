@@ -18,6 +18,26 @@ const selectedTxId = ref(null);
 const selectedTx = computed(() => transactions.value.find((x) => x.id === selectedTxId.value) || null);
 function openTx(tx) { selectedTxId.value = tx.id; }
 function closeTx() { selectedTxId.value = null; }
+
+// Filters for the "all transactions" list
+const filterText = ref('');
+const filterType = ref('');
+const filterCreator = ref('');
+
+const creators = computed(() => {
+  const map = new Map();
+  for (const tx of transactions.value) map.set(tx.created_by, tx.created_by_name);
+  return [...map].map(([id, name]) => ({ id, name }));
+});
+
+const filteredTransactions = computed(() =>
+  transactions.value.filter((tx) => {
+    if (filterType.value && tx.type !== filterType.value) return false;
+    if (filterCreator.value !== '' && tx.created_by !== filterCreator.value) return false;
+    if (filterText.value && !tx.name.toLowerCase().includes(filterText.value.trim().toLowerCase())) return false;
+    return true;
+  })
+);
 const myShares = ref([]);
 const transactions = ref([]);
 const users = ref([]);
@@ -182,15 +202,37 @@ onMounted(load);
     <div class="card">
       <h2>{{ t('payments.allTransactions') }}</h2>
       <p class="muted" style="margin:-0.25rem 0 0.75rem; font-size:0.82rem">{{ t('payments.detailsHint') }}</p>
+
+      <div class="row" style="margin-bottom:0.75rem">
+        <div><input v-model="filterText" :placeholder="t('payments.searchPlaceholder')" /></div>
+        <div>
+          <select v-model="filterType">
+            <option value="">{{ t('payments.allTypes') }}</option>
+            <option value="payment">{{ t('txTypes.payment') }}</option>
+            <option value="expense">{{ t('txTypes.expense') }}</option>
+            <option value="income">{{ t('txTypes.income') }}</option>
+          </select>
+        </div>
+        <div>
+          <select v-model="filterCreator">
+            <option value="">{{ t('payments.allCreators') }}</option>
+            <option v-for="c in creators" :key="c.id" :value="c.id">{{ c.name }}</option>
+          </select>
+        </div>
+      </div>
+
       <table>
         <thead><tr><th>{{ t('common.name') }}</th><th>{{ t('payments.type') }}</th><th>{{ t('payments.amount') }}</th><th>{{ t('payments.createdBy') }}</th><th>{{ t('payments.createdAt') }}</th></tr></thead>
         <tbody>
-          <tr v-for="tx in transactions" :key="tx.id" class="clickable" @click="openTx(tx)">
+          <tr v-for="tx in filteredTransactions" :key="tx.id" class="clickable" @click="openTx(tx)">
             <td><strong>{{ tx.name }}</strong></td>
             <td>{{ t('txTypes.' + tx.type) }}</td>
             <td>{{ money(tx.amount) }}</td>
             <td>{{ tx.created_by_name }}</td>
             <td class="muted">{{ dateTime(tx.created_at) }}</td>
+          </tr>
+          <tr v-if="!filteredTransactions.length">
+            <td colspan="5" class="muted">{{ t('payments.noResults') }}</td>
           </tr>
         </tbody>
       </table>

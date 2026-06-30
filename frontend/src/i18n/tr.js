@@ -20,6 +20,7 @@ export default {
     date: 'Tarih',
     status: 'Durum',
     close: 'Kapat',
+    all: 'Tümü',
   },
   login: {
     title: 'Giriş yap',
@@ -70,6 +71,10 @@ export default {
     notPaid: 'Ödenmedi',
     details: 'İşlem detayları',
     detailsHint: 'Detayları görmek için bir işleme tıklayın.',
+    searchPlaceholder: 'İşlem adı ara…',
+    noResults: 'Eşleşen işlem bulunamadı.',
+    allTypes: 'Tüm türler',
+    allCreators: 'Tüm oluşturanlar',
   },
   cleaning: {
     title: 'Temizlik takvimi',
