@@ -5,9 +5,9 @@ financial transactions and maintenance operations for residential sites. It
 automates payment tracking, manages cleaning schedules, and clearly assigns
 daily or weekly cleaning responsibilities to designated staff or residents.
 
-> **Status:** Documentation + project skeleton. Application code is not yet
-> implemented — this repository currently establishes the structure, data model,
-> and infrastructure design that the implementation will follow.
+> **Status:** Working application. A Vue 3 SPA, an Express + PostgreSQL REST API,
+> and a Dockerized database are implemented and runnable locally — see
+> [Getting started](#getting-started).
 
 ---
 
@@ -60,7 +60,8 @@ site_management/
 │       ├── properties.md
 │       ├── payments.md
 │       └── cleaning.md
-├── frontend/              ← Vue.js application (skeleton)
+├── frontend/              ← Vue.js single-page application
+├── backend/               ← Express + PostgreSQL REST API
 ├── db/                    ← database schema & seed scripts
 │   └── init/              ← SQL run on first container start
 └── docker/               ← Docker Compose & automated setup scripts
@@ -69,15 +70,25 @@ site_management/
 
 ## Getting started
 
-The local environment runs PostgreSQL inside Docker. Full, step-by-step
-instructions — including automated Docker installation — live in
-[docs/setup.md](docs/setup.md).
+The local environment runs PostgreSQL inside Docker, with a Node API and a Vue
+dev server on the host. Full step-by-step instructions — including automated
+Docker installation — live in [docs/setup.md](docs/setup.md).
 
 ```bash
-# from the repository root
+# 1. database (from the repository root)
 ./docker/scripts/install-docker.sh   # installs Docker if missing
-./docker/scripts/setup.sh            # starts PostgreSQL and applies the schema
+./docker/scripts/setup.sh            # starts PostgreSQL, applies schema + seed
+
+# 2. API
+cd backend && cp .env.example .env && npm install && npm run dev   # :3000
+
+# 3. frontend (new terminal)
+cd frontend && npm install && npm run dev                          # :5173
 ```
+
+Then open <http://localhost:5173> and sign in with a demo account (all use the
+password `password123`): `admin@site.test`, `alice@site.test`, `bob@site.test`,
+`joe@site.test`.
 
 ## Documentation map
 

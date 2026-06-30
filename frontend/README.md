@@ -1,28 +1,43 @@
-# Frontend (skeleton)
+# Frontend
 
-The Vue.js single-page application for Site Management. This is a **skeleton** —
-the build tooling and source tree are not yet generated.
+The Vue 3 (Vite) single-page application for Site Management, using `vue-router`,
+Pinia, and axios.
 
-## Intended structure & conventions
-
-See [`docs/frontend.md`](../docs/frontend.md) for the planned folder layout
-(`src/views`, `src/stores`, `src/services`, …) and conventions.
-
-## Bootstrapping (planned)
-
-When implementation begins, scaffold a Vue + Vite app here, for example:
+## Run
 
 ```bash
-npm create vue@latest .
 npm install
-npm run dev
+npm run dev        # http://localhost:5173
 ```
 
-The placeholder [`package.json`](package.json) records the intended metadata and
-scripts; replace it with the generated one when scaffolding.
+The dev server proxies `/api` to the backend on port 3000 (see
+[`vite.config.js`](vite.config.js)). Start the [backend](../backend/README.md)
+and [database](../docker/README.md) first. Sign in with a demo account (password
+`password123`), e.g. `alice@site.test`.
+
+> The dev server uses file-watch polling to avoid the host inotify limit
+> (`ENOSPC`); see `server.watch` in `vite.config.js`.
+
+## Structure
+
+```
+src/
+├── main.js              app bootstrap (Pinia + router)
+├── App.vue              shell + navigation
+├── style.css           global styles
+├── router/index.js     routes + auth guard
+├── stores/auth.js      Pinia auth store (token + user)
+├── services/api.js     axios instance with JWT interceptor
+└── views/
+    ├── LoginView.vue
+    ├── DashboardView.vue    debts overview + my summary
+    ├── PaymentsView.vue     Payments tab, create transaction, mark paid
+    ├── CleaningView.vue     assignments, tasks, admin tools
+    └── PropertiesView.vue   properties, units, residents
+```
 
 ## Related documents
 
 - [Frontend design](../docs/frontend.md)
+- [Backend API](../backend/README.md)
 - [Architecture](../docs/architecture.md)
-- [Feature catalog](../docs/features/README.md)

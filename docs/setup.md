@@ -35,6 +35,37 @@ This script:
 3. On the container's **first** start, PostgreSQL automatically runs every script
    in [`db/init/`](../db/init/) — applying [`01_schema.sql`](../db/init/01_schema.sql).
 
+## 3. Run the backend API
+
+```bash
+cd backend
+cp .env.example .env          # ensure PGPORT matches docker/.env POSTGRES_PORT
+npm install
+npm run dev                   # http://localhost:3000
+```
+
+See [`backend/README.md`](../backend/README.md) for the full API reference.
+
+## 4. Run the frontend
+
+```bash
+cd frontend
+npm install
+npm run dev                   # http://localhost:5173
+```
+
+Open <http://localhost:5173> and sign in with a demo account (all use the
+password `password123`): `admin@site.test`, `alice@site.test`, `bob@site.test`,
+`joe@site.test`. The Vite dev server proxies `/api` to the backend on port 3000.
+
+> **Note on ports:** if `5432` is already in use on your host, set a free port
+> (e.g. `5433`) in both `docker/.env` (`POSTGRES_PORT`) and `backend/.env`
+> (`PGPORT`).
+
+> **Note on file watchers:** the frontend dev server uses polling
+> (`server.watch.usePolling` in `vite.config.js`) to avoid hitting the host's
+> inotify watcher limit (`ENOSPC`).
+
 ## Configuration
 
 Database credentials and the exposed port are read from `docker/.env`. Defaults
