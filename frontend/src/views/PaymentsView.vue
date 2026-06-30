@@ -143,26 +143,23 @@ onMounted(load);
     <div class="card">
       <h2>{{ t('payments.myPayments') }}</h2>
       <p class="muted" v-if="!myShares.length">{{ t('payments.nothingToPay') }}</p>
-      <table v-else>
-        <thead><tr><th>{{ t('payments.transaction') }}</th><th>{{ t('payments.from') }}</th><th>{{ t('payments.due') }}</th><th>{{ t('payments.amount') }}</th><th>{{ t('common.status') }}</th><th></th></tr></thead>
-        <tbody>
-          <tr v-for="s in myShares" :key="s.share_id">
-            <td>
-              <strong>{{ s.name }}</strong>
-              <div class="muted" v-if="s.description">{{ s.description }}</div>
-            </td>
-            <td>{{ s.created_by_name }}</td>
-            <td class="muted">{{ s.due_date ? s.due_date.slice(0, 10) : t('common.none') }}</td>
-            <td>{{ money(s.amount_due) }}</td>
-            <td><span class="badge" :class="s.status">{{ t('status.' + s.status) }}</span></td>
-            <td>
-              <button v-if="s.status === 'pending'" class="small" @click="pay(s.share_id)">
-                {{ t('payments.markPaid') }}
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div v-else class="pay-list">
+        <div class="pay-item" v-for="s in myShares" :key="s.share_id">
+          <div class="pay-head">
+            <strong>{{ s.name }}</strong>
+            <span class="badge" :class="s.status">{{ t('status.' + s.status) }}</span>
+          </div>
+          <div class="muted" v-if="s.description" style="font-size:0.85rem">{{ s.description }}</div>
+          <div class="pay-meta">
+            <span><span class="muted">{{ t('payments.from') }}:</span> {{ s.created_by_name }}</span>
+            <span><span class="muted">{{ t('payments.due') }}:</span> {{ s.due_date ? s.due_date.slice(0, 10) : t('common.none') }}</span>
+            <span class="pay-amount">{{ money(s.amount_due) }}</span>
+          </div>
+          <button v-if="s.status === 'pending'" class="pay-btn" @click="pay(s.share_id)">
+            {{ t('payments.markPaid') }}
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Create a new named transaction -->
