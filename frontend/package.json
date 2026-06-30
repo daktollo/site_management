@@ -1,0 +1,11 @@
+{
+  "name": "site-management-frontend",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Vue.js frontend for the Site Management application (skeleton placeholder).",
+  "type": "module",
+  "scripts": {
+    "dev": "echo \"Not yet scaffolded — see frontend/README.md\" && exit 1",
+    "build": "echo \"Not yet scaffolded — see frontend/README.md\" && exit 1"
+  }
+}
