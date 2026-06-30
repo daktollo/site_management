@@ -9,7 +9,8 @@ router.use(authenticate);
 router.get('/transactions', async (req, res, next) => {
   try {
     const { rows: txns } = await query(
-      `SELECT t.id, t.name, t.description, t.type, t.amount, t.due_date, t.created_at,
+      `SELECT t.id, t.name, t.description, t.type, t.amount,
+              to_char(t.due_date, 'YYYY-MM-DD') AS due_date, t.created_at,
               t.created_by, u.full_name AS created_by_name
        FROM transactions t
        JOIN users u ON u.id = t.created_by
@@ -33,7 +34,8 @@ router.get('/my', async (req, res, next) => {
   try {
     const { rows } = await query(
       `SELECT s.id AS share_id, s.amount_due, s.status, s.paid_at,
-              t.id AS transaction_id, t.name, t.description, t.due_date,
+              t.id AS transaction_id, t.name, t.description,
+              to_char(t.due_date, 'YYYY-MM-DD') AS due_date,
               creator.full_name AS created_by_name
        FROM transaction_shares s
        JOIN transactions t ON t.id = s.transaction_id

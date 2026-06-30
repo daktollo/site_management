@@ -51,19 +51,26 @@ INSERT INTO transaction_shares (transaction_id, user_id, amount_due, status) VAL
     (2, 4, 200.00, 'pending'),
     (2, 5, 200.00, 'pending');
 
--- Cleaning tasks
+-- Cleaning tasks (only two for now)
+-- task id 1 = Merdiven temizliği, 2 = Asansör temizliği
 INSERT INTO cleaning_tasks (name, description, frequency) VALUES
-    ('Lobby mopping', 'Mop the main lobby floor', 'daily'),
-    ('Stairwell cleaning', 'Sweep and wipe stairwell rails', 'weekly'),
-    ('Garden watering', 'Water communal garden plants', 'daily');
+    ('Merdiven temizliği', 'Merdivenlerin süpürülmesi ve küpeştelerin silinmesi', 'weekly'),
+    ('Asansör temizliği',  'Asansör kabininin ve aynalarının temizlenmesi', 'daily');
 
--- Cleaning assignments (assignee ids: 2 = Joe staff, 3/4/5 residents)
+-- Cleaning assignments spread around today so the calendar is populated.
+-- assignee ids: 2 = Cleaner Joe (staff), 3 = Alice, 4 = Bob, 5 = Carol
 INSERT INTO cleaning_assignments (task_id, assignee_id, scheduled_date, status) VALUES
-    (1, 2, CURRENT_DATE,                    'pending'),
-    (1, 2, CURRENT_DATE + INTERVAL '1 day', 'pending'),
-    (2, 3, CURRENT_DATE + INTERVAL '2 day', 'pending'),
-    (3, 4, CURRENT_DATE,                    'done'),
-    (3, 5, CURRENT_DATE + INTERVAL '1 day', 'pending');
+    -- Asansör temizliği (daily) — mostly Joe
+    (2, 2, CURRENT_DATE - INTERVAL '2 day', 'done'),
+    (2, 2, CURRENT_DATE - INTERVAL '1 day', 'done'),
+    (2, 2, CURRENT_DATE,                    'pending'),
+    (2, 2, CURRENT_DATE + INTERVAL '1 day', 'pending'),
+    (2, 4, CURRENT_DATE + INTERVAL '2 day', 'pending'),
+    (2, 2, CURRENT_DATE + INTERVAL '3 day', 'pending'),
+    -- Merdiven temizliği (weekly) — rotating residents
+    (1, 3, CURRENT_DATE - INTERVAL '1 day', 'done'),
+    (1, 4, CURRENT_DATE + INTERVAL '6 day', 'pending'),
+    (1, 5, CURRENT_DATE + INTERVAL '13 day', 'pending');
 UPDATE cleaning_assignments SET completed_at = now() WHERE status = 'done';
 
 COMMIT;

@@ -67,6 +67,10 @@ export default {
   },
   cleaning: {
     title: 'Temizlik takvimi',
+    today: 'Bugün',
+    todayLabel: 'Bugün:',
+    noToday: 'Bugün için planlanmış görev yok.',
+    listTitle: 'Yaklaşan görevler',
     assignments: 'Görev atamaları',
     task: 'Görev',
     frequency: 'Sıklık',

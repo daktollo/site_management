@@ -39,7 +39,8 @@ router.get('/assignments', async (req, res, next) => {
     let where = '';
     if (mine) { where = 'WHERE a.assignee_id = $1'; params.push(req.user.id); }
     const { rows } = await query(
-      `SELECT a.id, a.scheduled_date, a.status, a.completed_at,
+      `SELECT a.id, to_char(a.scheduled_date, 'YYYY-MM-DD') AS scheduled_date,
+              a.status, a.completed_at,
               t.id AS task_id, t.name AS task_name, t.frequency,
               u.id AS assignee_id, u.full_name AS assignee_name
        FROM cleaning_assignments a

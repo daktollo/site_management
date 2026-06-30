@@ -67,6 +67,10 @@ export default {
   },
   cleaning: {
     title: 'Cleaning schedules',
+    today: 'Today',
+    todayLabel: 'Today:',
+    noToday: 'No tasks scheduled for today.',
+    listTitle: 'Upcoming tasks',
     assignments: 'Assignments',
     task: 'Task',
     frequency: 'Frequency',
