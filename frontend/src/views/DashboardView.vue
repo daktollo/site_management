@@ -53,14 +53,13 @@ onMounted(async () => {
       <div class="card">
         <h2>{{ t('dashboard.everyoneDebt') }}</h2>
         <table>
-          <thead><tr><th>{{ t('dashboard.resident') }}</th><th>{{ t('dashboard.outstanding') }}</th><th>{{ t('dashboard.paidToDate') }}</th></tr></thead>
+          <thead><tr><th>{{ t('dashboard.resident') }}</th><th>{{ t('dashboard.outstanding') }}</th></tr></thead>
           <tbody>
             <tr v-for="d in debts" :key="d.id">
               <td>{{ d.full_name }}</td>
               <td :style="{ color: Number(d.outstanding) > 0 ? 'var(--red)' : 'var(--muted)' }">
                 {{ money(d.outstanding) }}
               </td>
-              <td class="muted">{{ money(d.paid) }}</td>
             </tr>
           </tbody>
         </table>

@@ -19,6 +19,7 @@ export default {
     none: '—',
     date: 'Date',
     status: 'Status',
+    close: 'Close',
   },
   login: {
     title: 'Sign in',
@@ -64,6 +65,11 @@ export default {
     allTransactions: 'All transactions',
     createdBy: 'Created by',
     shares: 'Shares',
+    createdAt: 'Created',
+    paidAt: 'Paid at',
+    notPaid: 'Not paid',
+    details: 'Transaction details',
+    detailsHint: 'Click a transaction to see details.',
   },
   cleaning: {
     title: 'Cleaning schedules',

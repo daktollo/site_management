@@ -1,11 +1,23 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import api from '../services/api.js';
 import { useAuthStore } from '../stores/auth.js';
 
 const auth = useAuthStore();
-const { t } = useI18n();
+const { t, locale } = useI18n();
+
+const intlLocale = computed(() => (locale.value === 'tr' ? 'tr-TR' : 'en-US'));
+function dateTime(iso) {
+  if (!iso) return t('common.none');
+  return new Intl.DateTimeFormat(intlLocale.value, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
+}
+
+// Transaction details modal (kept in sync with the live list via id lookup)
+const selectedTxId = ref(null);
+const selectedTx = computed(() => transactions.value.find((x) => x.id === selectedTxId.value) || null);
+function openTx(tx) { selectedTxId.value = tx.id; }
+function closeTx() { selectedTxId.value = null; }
 const myShares = ref([]);
 const transactions = ref([]);
 const users = ref([]);
@@ -169,23 +181,53 @@ onMounted(load);
     <!-- All transactions -->
     <div class="card">
       <h2>{{ t('payments.allTransactions') }}</h2>
+      <p class="muted" style="margin:-0.25rem 0 0.75rem; font-size:0.82rem">{{ t('payments.detailsHint') }}</p>
       <table>
-        <thead><tr><th>{{ t('common.name') }}</th><th>{{ t('payments.type') }}</th><th>{{ t('payments.amount') }}</th><th>{{ t('payments.createdBy') }}</th><th>{{ t('payments.shares') }}</th></tr></thead>
+        <thead><tr><th>{{ t('common.name') }}</th><th>{{ t('payments.type') }}</th><th>{{ t('payments.amount') }}</th><th>{{ t('payments.createdBy') }}</th><th>{{ t('payments.createdAt') }}</th></tr></thead>
         <tbody>
-          <tr v-for="tx in transactions" :key="tx.id">
+          <tr v-for="tx in transactions" :key="tx.id" class="clickable" @click="openTx(tx)">
             <td><strong>{{ tx.name }}</strong></td>
             <td>{{ t('txTypes.' + tx.type) }}</td>
             <td>{{ money(tx.amount) }}</td>
             <td>{{ tx.created_by_name }}</td>
-            <td>
-              <span v-for="s in tx.shares" :key="s.id" class="badge" :class="s.status" style="margin:0 0.25rem 0.25rem 0">
-                {{ s.user_name }} {{ money(s.amount_due) }}
-              </span>
-              <span v-if="!tx.shares.length" class="muted">{{ t('common.none') }}</span>
-            </td>
+            <td class="muted">{{ dateTime(tx.created_at) }}</td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Transaction details modal -->
+    <div v-if="selectedTx" class="modal-overlay" @click.self="closeTx">
+      <div class="modal">
+        <div class="modal-head">
+          <h2 style="margin:0">{{ selectedTx.name }}</h2>
+          <button class="ghost small" @click="closeTx">{{ t('common.close') }}</button>
+        </div>
+
+        <table class="kv">
+          <tbody>
+            <tr><th>{{ t('payments.type') }}</th><td>{{ t('txTypes.' + selectedTx.type) }}</td></tr>
+            <tr><th>{{ t('payments.amount') }}</th><td>{{ money(selectedTx.amount) }}</td></tr>
+            <tr><th>{{ t('payments.createdBy') }}</th><td>{{ selectedTx.created_by_name }}</td></tr>
+            <tr><th>{{ t('payments.createdAt') }}</th><td>{{ dateTime(selectedTx.created_at) }}</td></tr>
+            <tr v-if="selectedTx.due_date"><th>{{ t('payments.dueDate') }}</th><td>{{ selectedTx.due_date }}</td></tr>
+            <tr v-if="selectedTx.description"><th>{{ t('common.description') }}</th><td>{{ selectedTx.description }}</td></tr>
+          </tbody>
+        </table>
+
+        <h3 v-if="selectedTx.shares.length" style="font-size:0.95rem; margin:1.25rem 0 0.5rem">{{ t('payments.shares') }}</h3>
+        <table v-if="selectedTx.shares.length">
+          <thead><tr><th>{{ t('payments.user') }}</th><th>{{ t('payments.amount') }}</th><th>{{ t('common.status') }}</th><th>{{ t('payments.paidAt') }}</th></tr></thead>
+          <tbody>
+            <tr v-for="s in selectedTx.shares" :key="s.id">
+              <td>{{ s.user_name }}</td>
+              <td>{{ money(s.amount_due) }}</td>
+              <td><span class="badge" :class="s.status">{{ t('status.' + s.status) }}</span></td>
+              <td class="muted">{{ s.status === 'paid' ? dateTime(s.paid_at) : t('payments.notPaid') }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </template>

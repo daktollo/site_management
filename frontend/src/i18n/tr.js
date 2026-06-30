@@ -19,6 +19,7 @@ export default {
     none: '—',
     date: 'Tarih',
     status: 'Durum',
+    close: 'Kapat',
   },
   login: {
     title: 'Giriş yap',
@@ -64,6 +65,11 @@ export default {
     allTransactions: 'Tüm işlemler',
     createdBy: 'Oluşturan',
     shares: 'Paylar',
+    createdAt: 'Oluşturulma',
+    paidAt: 'Ödeme tarihi',
+    notPaid: 'Ödenmedi',
+    details: 'İşlem detayları',
+    detailsHint: 'Detayları görmek için bir işleme tıklayın.',
   },
   cleaning: {
     title: 'Temizlik takvimi',
